@@ -1,34 +1,31 @@
 pacman::p_load("tidyverse", "googlesheets4", "googledrive", "lubridate", "corrr")
 
-library(usethis)
+# library(usethis)
+# 
+# use_git()
+# use_github()
+# 
+# drive_sheet <- "https://docs.google.com/spreadsheets/d/1Fx1wFh_z_FCzztZuScGicivwRmyDgR1p35bcu0yRsrI/edit#gid=13038978"
+# 
+# flights_sheet <- read_sheet(drive_sheet, sheet = "All Regions Requests Multi Pati")
+# saveRDS(flights_sheet, "flights.rds")
+# 
+# socialMedia_sheet <- read_sheet(drive_sheet, sheet = "Social Media Data")
+# saveRDS(socialMedia_sheet, "socialMedia.rds")
 
-use_git()
-use_github()
 
-drive_sheet <- "https://docs.google.com/spreadsheets/d/1Fx1wFh_z_FCzztZuScGicivwRmyDgR1p35bcu0yRsrI/edit#gid=13038978"
+# flightsMatchDatesDash <- readRDS("~/Dropbox/Clients/PHI Social Media/flights.rds") %>% filter(str_detect(`Date of Service`, "-")) %>% 
+#   mutate(Date = as_date(`Date of Service`))
+# 
+# flightsDatesSlash <- readRDS("~/Dropbox/Clients/PHI Social Media/flights.rds") %>% filter(str_detect(`Date of Service`, "/")) %>% 
+#   mutate(Date = as.Date(mdy_hm(`Date of Service`)))
+# 
+# flights_dates_fixed <- full_join(flightsMatchDatesDash, flightsDatesSlash) %>% 
+#   rename(`Exact Date` = "Date")
+# 
+# saveRDS(flights_dates_fixed, "flights.rds")
 
-flights_sheet <- read_sheet(drive_sheet, sheet = "All Regions Requests Multi Pati")
-saveRDS(flights_sheet, "flights.rds")
-
-socialMedia_sheet <- read_sheet(drive_sheet, sheet = "Social Media Data")
-saveRDS(socialMedia_sheet, "socialMedia.rds")
-
-
-
-### lining up weeks.  Fligts exact date.  SM week date (beginning or end)
-
-### focus SM: number of posts, platforms, what is score (huge range), metric (ER, Fans, Posts)
-
-### note: can do analyses where date ranges overlap 10/1/21 20:11
-
-flightsMatchDatesDash <- readRDS("~/Dropbox/Clients/PHI Social Media/flights.rds") %>% filter(str_detect(`Date of Service`, "-")) %>% 
-  mutate(Date = as_date(`Date of Service`))
-
-flightsDatesSlash <- readRDS("~/Dropbox/Clients/PHI Social Media/flights.rds") %>% filter(str_detect(`Date of Service`, "/")) %>% 
-  mutate(Date = as.Date(mdy_hm(`Date of Service`)))
-
-flights <- full_join(flightsMatchDatesDash, flightsDatesSlash) %>% 
-  rename(`Exact Date` = "Date")
+flights <- readRDS("~/Dropbox/Clients/PHI Social Media/flights.rds")
 
 flightsMatchSM <- flights %>% filter(`Exact Date` > "2022-09-23") %>% 
   select(`Base Name`, `Exact Date`) %>% 
@@ -138,10 +135,9 @@ flightsSMnorm <- flightsSM %>%
 
 corrs <- flightsSM %>% select(-(Date)) %>%  correlate() %>% focus(flightsPerDay)
 
+plot_data <- flightsSMnorm %>% filter(name == "flightsPerDay_z" | name == "Facebook ER_z")
 
-data <- flightsSMnorm %>% filter(name == "flightsPerDay_z" | name == "Facebook ER_z")
-
-ggplot(data = data, aes(x = Date, y =value, group=name, color = name)) +
+ggplot(data = plot_data, aes(x = Date, y =value, group=name, color = name)) +
   geom_line()
 
 # drive_trash("datesForPhi")
